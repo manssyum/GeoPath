@@ -142,12 +142,9 @@ function checkAnswer(btn, user, correct) {
 }
 
 // ===== НАЙДИ ОШИБКУ =====
-// ИСПРАВЛЕНО: убраны одинарные кавычки из onclick, чтобы не ломался
-// если в тексте объяснения встретится апостроф.
-// Теперь данные хранятся в window.currentErrorQuestion.
 function startFindError() {
     const q = findError[Math.floor(Math.random() * findError.length)];
-    window.currentErrorQuestion = q; // сохраняем весь объект
+    window.currentErrorQuestion = q;
 
     document.getElementById("game").innerHTML = `
         <div class="card">
@@ -189,7 +186,6 @@ function answerError(btn, userSaysHasError) {
 }
 
 // ===== НАЙДИ ЛИШНЕЕ =====
-// ИСПРАВЛЕНО: объяснение тоже сохраняется через window, без onclick-строки
 function startFindOdd() {
     const q = findOdd[Math.floor(Math.random() * findOdd.length)];
     window.currentOddQuestion = q;
@@ -231,13 +227,12 @@ function checkOdd(btn, user) {
 
 // ===== СОРТИРОВКА =====
 function startSort() {
-    // Берём случайные 6 элементов из общего списка, чтобы не перегружать экран
     const picked = shuffle([...sorting]).slice(0, 6);
     window.sortData = picked;
     window.sortCorrect = 0;
     window.sortAnswered = 0;
 
-    const classes = [...new Set(sorting.map(s => s.type))]; // уникальные типы
+    const classes = [...new Set(sorting.map(s => s.type))];
 
     let html = `
         <div class="card">
@@ -267,7 +262,6 @@ function startSort() {
 }
 
 function sortAnswer(btn, idx, realType, chosenType) {
-    // Блокируем все кнопки в этой строке
     const row = document.getElementById("sort-row-" + idx);
     row.querySelectorAll(".answer").forEach(b => b.disabled = true);
 
@@ -282,7 +276,6 @@ function sortAnswer(btn, idx, realType, chosenType) {
         addXP(5);
     } else {
         btn.classList.add("wrong");
-        // подсветим правильный вариант
         row.querySelectorAll(".answer").forEach(b => {
             if (b.textContent === realType) b.classList.add("correct");
         });
@@ -292,7 +285,6 @@ function sortAnswer(btn, idx, realType, chosenType) {
 
     document.getElementById("sortScore").innerText = window.sortCorrect;
 
-    // Когда ответили на все — предлагаем сыграть ещё
     if (window.sortAnswered === window.sortData.length) {
         setTimeout(() => {
             const retry = document.createElement("button");
@@ -307,7 +299,7 @@ function sortAnswer(btn, idx, realType, chosenType) {
 // ===== СООТНЕСЕНИЕ =====
 function startMatch() {
     const shuffledData = shuffle([...matching]);
-    window.matchData = shuffledData; // ← ИСПРАВЛЕНО (было: window.matchData = matching)
+    window.matchData = shuffledData;
 
     const uses = matching.map(m => m.use);
 
@@ -352,7 +344,6 @@ function checkAllMatches() {
             result.innerHTML = "✅";
         } else {
             result.innerHTML = "❌";
-            // показываем правильный ответ прямо в select
             sel.style.borderColor = "#f44336";
         }
     });
@@ -413,7 +404,7 @@ function checkImageAnswer(btn, chosen, correctName) {
 
 // ===== ШКАЛА ТВЁРДОСТИ =====
 function startHardnessTest() {
-    window.shuffledHardness = shuffle([...hardnessScale]); // сохраняем перемешанный
+    window.shuffledHardness = shuffle([...hardnessScale]);
 
     let html = `
         <div class="card">
@@ -444,7 +435,7 @@ function startHardnessTest() {
 }
 
 function checkHardness() {
-    const scale = window.shuffledHardness; // ← ИСПРАВЛЕНО: используем тот же массив
+    const scale = window.shuffledHardness;
     let correct = 0;
 
     scale.forEach((m, i) => {
@@ -476,4 +467,130 @@ function checkHardness() {
                 Правильно: ${correct} из ${scale.length}. Попробуйте ещё раз.
             </div>`;
     }
+}
+
+// ===== ЛАБОРАТОРИЯ ТВЁРДОСТИ =====
+let currentLabMineral = null;
+
+function startHardnessLab() {
+    currentLabMineral = labMinerals[Math.floor(Math.random() * labMinerals.length)];
+
+    let html = `
+        <div class="card">
+            <h2>Лаборатория твёрдости</h2>
+            <p style="margin:10px 0;font-size:14px;color:#666;">
+                Выберите инструмент и попробуйте поцарапать минерал.
+                <br>Царапина появится, если инструмент <b>твёрже</b> минерала.
+            </p>
+
+            <div style="display:flex;gap:30px;align-items:center;flex-wrap:wrap;margin:15px 0;justify-content:center;">
+                <!-- Минерал -->
+                <div style="text-align:center;">
+                    <div style="width:220px;height:220px;border-radius:15px;
+                        border:3px solid #333;
+                        background:#fff;
+                        display:flex;flex-direction:column;
+                        align-items:center;justify-content:center;
+                        position:relative;overflow:hidden;">
+                        <img src="${currentLabMineral.image}" 
+                             alt="${currentLabMineral.name}"
+                             style="width:100%;height:100%;object-fit:cover;border-radius:12px;">
+                        <div id="scratch-layer" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;border-radius:12px;"></div>
+                    </div>
+                    <p style="margin-top:8px;font-size:18px;font-weight:bold;">${currentLabMineral.name}</p>
+                </div>
+
+                <!-- Инструменты -->
+                <div style="display:flex;flex-direction:column;gap:8px;min-width:180px;">
+                    <p style="font-weight:bold;margin-bottom:5px;">Инструменты:</p>
+                    ${labTools.map((t, i) => `
+                        <button class="answer" style="width:auto;padding:10px 18px;display:inline-block;font-size:14px;"
+                            onclick="useTool(${i})">
+                            ${t.name} (твёрдость ${t.hardness})
+                        </button>
+                    `).join("")}
+                </div>
+            </div>
+
+            <div id="lab-result" style="margin-top:15px;padding:15px;border-radius:8px;background:#f5f5f5;min-height:60px;">
+                <p style="color:#777;">Нажмите на инструмент, чтобы проверить твёрдость</p>
+            </div>
+
+            <button class="answer" style="width:auto;display:inline-block;padding:8px 20px;margin-top:12px;" onclick="startHardnessLab()">Другой минерал</button>
+        </div>
+    `;
+    document.getElementById("game").innerHTML = html;
+}
+
+function useTool(toolIndex) {
+    const tool = labTools[toolIndex];
+    const mineral = currentLabMineral;
+
+    const scratchLayer = document.getElementById("scratch-layer");
+    const resultDiv = document.getElementById("lab-result");
+
+    const willScratch = tool.hardness > mineral.hardness;
+
+    // Создаём царапину по центру
+    const x = 70 + Math.random() * 80; // от 70 до 150
+    const y = 70 + Math.random() * 80; // от 70 до 150
+    const angle = Math.random() * 360;
+    const length = 40 + Math.random() * 30;
+
+    const scratch = document.createElement("div");
+    scratch.style.cssText = `
+        position:absolute;
+        left:${x}px;
+        top:${y}px;
+        width:${length}px;
+        height:4px;
+        background:${willScratch ? '#ffffff' : 'transparent'};
+        border-bottom: ${willScratch ? '3px solid #ffffff' : '1px solid transparent'};
+        transform: rotate(${angle}deg);
+        opacity:${willScratch ? 1 : 0};
+        transition: all 0.5s ease;
+        border-radius: ${willScratch ? '4px' : '0'};
+        box-shadow: ${willScratch ? '0 0 12px rgba(255,255,255,0.9), 0 0 25px rgba(255,255,255,0.5)' : 'none'};
+    `;
+    scratchLayer.appendChild(scratch);
+
+    // Блокируем кнопки
+    document.querySelectorAll('.card .answer[onclick*="useTool"]').forEach(b => b.disabled = true);
+
+    // Формируем вывод
+    let resultText = '';
+    if (willScratch) {
+        resultText = `
+            ${tool.name} (твёрдость ${tool.hardness})
+            оставил царапину на ${mineral.name} (твёрдость ${mineral.hardness})
+            Вывод: ${tool.name} твёрже, чем ${mineral.name}.
+        `;
+    } else {
+        resultText = `
+            ${tool.name} (твёрдость ${tool.hardness})
+            не оставил царапины на ${mineral.name} (твёрдость ${mineral.hardness})
+            Вывод: ${tool.name} мягче, чем ${mineral.name}.
+        `;
+    }
+
+    resultDiv.innerHTML = `
+        <div style="padding:15px;border-radius:8px;border-left:5px solid ${willScratch ? '#4caf50' : '#f44336'};background:#f9f9f9;font-size:15px;line-height:1.8;">
+            ${resultText.replace(/\n/g, '<br>')}
+        </div>
+    `;
+
+    // Кнопка "Попробовать ещё раз"
+    setTimeout(() => {
+        const resetBtn = document.createElement("button");
+        resetBtn.className = "answer";
+        resetBtn.style.cssText = "width:auto;display:inline-block;padding:8px 16px;margin-top:10px;";
+        resetBtn.textContent = "Попробовать ещё раз с этим минералом";
+        resetBtn.onclick = function() {
+            document.getElementById("scratch-layer").innerHTML = "";
+            document.querySelectorAll('.card .answer[onclick*="useTool"]').forEach(b => b.disabled = false);
+            document.getElementById("lab-result").innerHTML = `<p style="color:#777;">Нажмите на инструмент, чтобы проверить твёрдость</p>`;
+            this.remove();
+        };
+        resultDiv.appendChild(resetBtn);
+    }, 500);
 }
