@@ -117,6 +117,7 @@ main {
 
 .answer:disabled {
     cursor: default;
+    opacity: 0.6;
 }
 
 /* ===== ЦВЕТА РЕЗУЛЬТАТА ===== */
@@ -160,4 +161,17 @@ main {
     font-size: 16px;
     line-height: 1.6;
     color: #444;
+}
+
+/* ===== ЛАБОРАТОРИЯ ===== */
+#scratch-layer div {
+    transition: all 0.4s ease;
+}
+
+#scratch-layer {
+    border-radius: 12px;
+}
+
+.card .answer[style*="width:auto"] {
+    text-align: center;
 }
