@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тайны недр Земли</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>🌍 Тайны недр Земли</h1>
+    <div class="stats">
+        <span>⭐ Опыт: <span id="xp">0</span></span>
+        <span>🏆 Уровень: <span id="level">1</span></span>
+    </div>
+</header>
+
+<nav>
+    <button onclick="showTheory()">📖 Теория</button>
+    <button onclick="startQuiz()">❓ Викторина</button>
+    <button onclick="startFindError()">🔍 Найди ошибку</button>
+    <button onclick="startFindOdd()">🧩 Найди лишнее</button>
+    <button onclick="startSort()">📊 Сортировка</button>
+    <button onclick="startMatch()">🔗 Соотнеси</button>
+    <button onclick="startImageQuiz()">🖼️ Определи по описанию</button>
+    <button onclick="startHardnessTest()">📏 Шкала твёрдости</button>
+    <button onclick="showAchievements()">🏅 Достижения</button>
+</nav>
+
+<main id="game">
+    <div class="welcome">
+        <h2>Добро пожаловать!</h2>
+        <p>
+            Исследуйте мир горных пород и минералов, проходите задания,<br>
+            получайте опыт и открывайте достижения.
+        </p>
+        <p style="margin-top:10px;font-size:14px;color:#555;">
+            💡 Начните с <b>Теории</b>, затем переходите к заданиям!
+        </p>
+    </div>
+</main>
+
+<script src="data.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
