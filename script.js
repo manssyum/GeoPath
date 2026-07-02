@@ -29,7 +29,7 @@ function shuffle(arr) {
 // ===== ПРОВЕРКА ДОСТИЖЕНИЙ =====
 function checkAchievements() {
     const achievements = [
-        { name: "Начинающий геолог",   emoji: "🪨", xp: 50  },
+        { name: "Начинающий геолог",   emoji: "🔍", xp: 50  },
         { name: "Полевой исследователь",emoji: "🔨", xp: 150 },
         { name: "Хранитель слоёв",     emoji: "📐", xp: 300 },
         { name: "Мастер земных недр",  emoji: "⛰️", xp: 500 }
@@ -305,8 +305,6 @@ function sortAnswer(btn, idx, realType, chosenType) {
 }
 
 // ===== СООТНЕСЕНИЕ =====
-// ИСПРАВЛЕНО: сохраняем shuffled-версию в window.matchData,
-// чтобы проверка шла в том же порядке, что и строки на экране
 function startMatch() {
     const shuffledData = shuffle([...matching]);
     window.matchData = shuffledData; // ← ИСПРАВЛЕНО (было: window.matchData = matching)
@@ -414,8 +412,6 @@ function checkImageAnswer(btn, chosen, correctName) {
 }
 
 // ===== ШКАЛА ТВЁРДОСТИ =====
-// ИСПРАВЛЕНО: теперь проверка идёт по тому же перемешанному массиву,
-// который использовался при отрисовке (window.shuffledHardness)
 function startHardnessTest() {
     window.shuffledHardness = shuffle([...hardnessScale]); // сохраняем перемешанный
 
