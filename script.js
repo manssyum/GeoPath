@@ -46,7 +46,7 @@ function checkAchievements() {
 // ===== ДОСТИЖЕНИЯ — экран отображения =====
 function showAchievements() {
     const achievements = [
-        { name: "Начинающий геолог",   emoji: "🪨", xp: 50  },
+        { name: "Начинающий геолог",   emoji: "🔍", xp: 50  },
         { name: "Полевой исследователь",emoji: "🔨", xp: 150 },
         { name: "Хранитель слоёв",     emoji: "📐", xp: 300 },
         { name: "Мастер земных недр",  emoji: "⛰️", xp: 500 }
