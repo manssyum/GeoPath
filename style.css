@@ -28,7 +28,7 @@ body::before{
 
 
 
-/* ===== ШАПКА ===== */
+/*  ШАПКА  */
 header {
     background: rgba(38, 50, 56, 0.95);
     color: white;
@@ -49,7 +49,7 @@ header h1 {
     gap: 24px;
 }
 
-/* ===== НАВИГАЦИЯ ===== */
+/*  НАВИГАЦИЯ  */
 nav {
     background: rgba(69, 90, 100, 0.95);
     padding: 10px;
@@ -75,14 +75,14 @@ nav button:hover {
     background: #b0bec5;
 }
 
-/* ===== ОСНОВНАЯ ОБЛАСТЬ ===== */
+/*  ОСНОВНАЯ ОБЛАСТЬ  */
 main {
     padding: 20px;
     max-width: 860px;
     margin: 0 auto;
 }
 
-/* ===== КАРТОЧКА ===== */
+/*  КАРТОЧКА  */
 .card {
     background: rgba(255, 255, 255, 0.97);
     padding: 22px;
@@ -96,7 +96,7 @@ main {
     font-size: 20px;
 }
 
-/* ===== КНОПКИ ОТВЕТОВ ===== */
+/*  КНОПКИ ОТВЕТОВ  */
 .answer {
     display: block;
     width: 100%;
@@ -120,7 +120,7 @@ main {
     opacity: 0.6;
 }
 
-/* ===== ЦВЕТА РЕЗУЛЬТАТА ===== */
+/*  ЦВЕТА РЕЗУЛЬТАТА  */
 .correct {
     background: #4caf50 !important;
     color: white;
@@ -131,7 +131,7 @@ main {
     color: white;
 }
 
-/* ===== ДОСТИЖЕНИЯ ===== */
+/*  ДОСТИЖЕНИЯ  */
 .achievement {
     background: #fff8e1;
     border-left: 6px solid gold;
@@ -143,7 +143,7 @@ main {
     gap: 4px;
 }
 
-/* ===== ПРИВЕТСТВЕННЫЙ ЭКРАН ===== */
+/*  ПРИВЕТСТВЕННЫЙ ЭКРАН  */
 .welcome {
     background: rgba(255, 255, 255, 0.95);
     padding: 36px 28px;
@@ -163,7 +163,7 @@ main {
     color: #444;
 }
 
-/* ===== ЛАБОРАТОРИЯ ===== */
+/*  ЛАБОРАТОРИЯ  */
 #scratch-layer div {
     transition: all 0.4s ease;
 }
