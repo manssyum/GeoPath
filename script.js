@@ -1,13 +1,12 @@
-// ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
 let xp = 0;
 let level = 1;
 let unlockedAchievements = new Set();
 
-// ===== ДОБАВЛЕНИЕ ОПЫТА И ПРОВЕРКА УРОВНЯ =====
+//ДОБАВЛЕНИЕ ОПЫТА И ПРОВЕРКА УРОВНЯ 
 function addXP(count) {
     xp += count;
 
-    if (xp >= level * 50) {
+    while (xp >= level * 50) {
         level++;
     }
 
@@ -16,9 +15,9 @@ function addXP(count) {
     document.getElementById("level").innerText = level;
 }
 
-// ===== ПЕРЕМЕШИВАНИЕ МАССИВА =====
+//ПЕРЕМЕШИВАНИЕ МАССИВА
 function shuffle(arr) {
-    const a = arr.slice(); // копия, чтобы не менять оригинал
+    const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [a[i], a[j]] = [a[j], a[i]];
@@ -26,7 +25,7 @@ function shuffle(arr) {
     return a;
 }
 
-// ===== ПРОВЕРКА ДОСТИЖЕНИЙ =====
+//ПРОВЕРКА ДОСТИЖЕНИЙ
 function checkAchievements() {
     const achievements = [
         { name: "Начинающий геолог",   emoji: "🔍", xp: 50  },
@@ -43,7 +42,7 @@ function checkAchievements() {
     });
 }
 
-// ===== ДОСТИЖЕНИЯ — экран отображения =====
+//ДОСТИЖЕНИЯ — экран отображения
 function showAchievements() {
     const achievements = [
         { name: "Начинающий геолог",   emoji: "🔍", xp: 50  },
@@ -69,7 +68,7 @@ function showAchievements() {
     document.getElementById("game").innerHTML = html;
 }
 
-// ===== ТЕОРИЯ =====
+//ТЕОРИЯ 
 function showTheory() {
     let html = `
         <div class="card">
@@ -111,11 +110,28 @@ function showTheory() {
             <h2>🔮 Метаморфические породы</h2>
             <ul>${theory.metamorphic.map(r => `<li style="margin:6px 0;">${r}</li>`).join("")}</ul>
         </div>
+        <div class="card">
+            <h2>🔬 Структуры горных пород</h2>
+            <ul>
+        ${theory.structures.map(item =>
+            `<li style="margin:8px 0;">${item}</li>`
+        ).join("")}
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>🧱 Текстуры горных пород</h2>
+            <ul>
+        ${theory.textures.map(item =>
+            `<li style="margin:8px 0;">${item}</li>`
+        ).join("")}
+            </ul>
+        </div>
     `;
     document.getElementById("game").innerHTML = html;
 }
 
-// ===== ВИКТОРИНА =====
+//ВИКТОРИНА
 function startQuiz() {
     const q = quiz[Math.floor(Math.random() * quiz.length)];
     let html = `<div class="card"><h2>❓ Викторина</h2><p style="font-size:16px;margin:15px 0;">${q.question}</p>`;
@@ -141,7 +157,7 @@ function checkAnswer(btn, user, correct) {
     }
 }
 
-// ===== НАЙДИ ОШИБКУ =====
+//  НАЙДИ ОШИБКУ 
 function startFindError() {
     const q = findError[Math.floor(Math.random() * findError.length)];
     window.currentErrorQuestion = q;
@@ -185,7 +201,7 @@ function answerError(btn, userSaysHasError) {
     setTimeout(() => startFindError(), 3000);
 }
 
-// ===== НАЙДИ ЛИШНЕЕ =====
+//  НАЙДИ ЛИШНЕЕ 
 function startFindOdd() {
     const q = findOdd[Math.floor(Math.random() * findOdd.length)];
     window.currentOddQuestion = q;
@@ -225,7 +241,7 @@ function checkOdd(btn, user) {
     setTimeout(() => startFindOdd(), 3000);
 }
 
-// ===== СОРТИРОВКА =====
+//  СОРТИРОВКА 
 function startSort() {
     const picked = shuffle([...sorting]).slice(0, 6);
     window.sortData = picked;
@@ -296,7 +312,7 @@ function sortAnswer(btn, idx, realType, chosenType) {
     }
 }
 
-// ===== СООТНЕСЕНИЕ =====
+//  СООТНЕСЕНИЕ 
 function startMatch() {
     const shuffledData = shuffle([...matching]);
     window.matchData = shuffledData;
@@ -365,11 +381,12 @@ function checkAllMatches() {
     }
 }
 
-// ===== ОПРЕДЕЛИ ПО ОПИСАНИЮ =====
+//  ОПРЕДЕЛИ ПО ОПИСАНИЮ 
 function startImageQuiz() {
     const q = imageQuiz[Math.floor(Math.random() * imageQuiz.length)];
     const shuffledOptions = shuffle([...q.options]);
-    const correctName = q.options[q.correct];
+
+    window.currentImageQuestion = q;
 
     let html = `
         <div class="card">
@@ -377,32 +394,56 @@ function startImageQuiz() {
             <div style="background:#f5f5f5;border-radius:10px;padding:15px;margin:15px 0;font-size:15px;">
                 ${q.desc}
             </div>
-            <p style="font-size:14px;color:#666;margin-bottom:10px;">Какой это минерал?</p>
+            <p style="font-size:14px;color:#666;margin-bottom:10px;">
+                Какой это минерал?
+            </p>
     `;
-    shuffledOptions.forEach(o => {
-        html += `<button class="answer" onclick="checkImageAnswer(this, '${o}', '${correctName}')">${o}</button>`;
+
+    shuffledOptions.forEach((o, i) => {
+        html += `
+            <button class="answer"
+                onclick="checkImageAnswer(this, ${i})">
+                ${o}
+            </button>
+        `;
     });
+
+    window.currentImageOptions = shuffledOptions;
+
     html += `</div>`;
+
     document.getElementById("game").innerHTML = html;
 }
 
-function checkImageAnswer(btn, chosen, correctName) {
+function checkImageAnswer(btn, index) {
     const buttons = document.querySelectorAll(".answer");
     buttons.forEach(b => b.disabled = true);
 
-    if (chosen === correctName) {
+    const chosen =
+        window.currentImageOptions[index];
+
+    const correct =
+        window.currentImageQuestion.options[
+            window.currentImageQuestion.correct
+        ];
+
+    if (chosen === correct) {
         btn.classList.add("correct");
         addXP(15);
     } else {
         btn.classList.add("wrong");
+
         buttons.forEach(b => {
-            if (b.textContent === correctName) b.classList.add("correct");
+            if (b.textContent.trim() === correct) {
+                b.classList.add("correct");
+            }
         });
     }
+
     setTimeout(() => startImageQuiz(), 1800);
 }
 
-// ===== ШКАЛА ТВЁРДОСТИ =====
+//  ШКАЛА ТВЁРДОСТИ 
 function startHardnessTest() {
     window.shuffledHardness = shuffle([...hardnessScale]);
 
@@ -469,7 +510,7 @@ function checkHardness() {
     }
 }
 
-// ===== ЛАБОРАТОРИЯ ТВЁРДОСТИ =====
+//  ЛАБОРАТОРИЯ ТВЁРДОСТИ 
 let currentLabMineral = null;
 
 function startHardnessLab() {
@@ -504,7 +545,8 @@ function startHardnessLab() {
                 <div style="display:flex;flex-direction:column;gap:8px;min-width:180px;">
                     <p style="font-weight:bold;margin-bottom:5px;">Инструменты:</p>
                     ${labTools.map((t, i) => `
-                        <button class="answer" style="width:auto;padding:10px 18px;display:inline-block;font-size:14px;"
+                        <button class="answer lab-tool-btn"
+                            style="width:auto;padding:10px 18px;display:inline-block;font-size:14px;"
                             onclick="useTool(${i})">
                             ${t.name} (твёрдость ${t.hardness})
                         </button>
@@ -537,27 +579,27 @@ function useTool(toolIndex) {
     const angle = Math.random() * 360;
     const length = 40 + Math.random() * 30;
 
-    const scratch = document.createElement("div");
-    scratch.style.cssText = `
-        position:absolute;
-        left:${x}px;
-        top:${y}px;
-        width:${length}px;
-        height:4px;
-        background:${willScratch ? '#ffffff' : 'transparent'};
-        border-bottom: ${willScratch ? '3px solid #ffffff' : '1px solid transparent'};
-        transform: rotate(${angle}deg);
-        opacity:${willScratch ? 1 : 0};
-        transition: all 0.5s ease;
-        border-radius: ${willScratch ? '4px' : '0'};
-        box-shadow: ${willScratch ? '0 0 12px rgba(255,255,255,0.9), 0 0 25px rgba(255,255,255,0.5)' : 'none'};
-    `;
-    scratchLayer.appendChild(scratch);
+    if (willScratch) {
+        const scratch = document.createElement("div");
 
-    // Блокируем кнопки
-    document.querySelectorAll('.card .answer[onclick*="useTool"]').forEach(b => b.disabled = true);
+        scratch.style.cssText = `
+            position:absolute;
+            left:${x}px;
+            top:${y}px;
+            width:${length}px;
+            height:4px;
+            background:#ffffff;
+            border-bottom:3px solid #ffffff;
+            transform:rotate(${angle}deg);
+            border-radius:4px;
+            box-shadow:0 0 12px rgba(255,255,255,0.9);
+        `;
 
-    // Формируем вывод
+        scratchLayer.appendChild(scratch);
+}
+
+    document.querySelectorAll('.lab-tool-btn').forEach(b => b.disabled = true);
+
     let resultText = '';
     if (willScratch) {
         resultText = `
@@ -579,7 +621,6 @@ function useTool(toolIndex) {
         </div>
     `;
 
-    // Кнопка "Попробовать ещё раз"
     setTimeout(() => {
         const resetBtn = document.createElement("button");
         resetBtn.className = "answer";
@@ -587,7 +628,7 @@ function useTool(toolIndex) {
         resetBtn.textContent = "Попробовать ещё раз с этим минералом";
         resetBtn.onclick = function() {
             document.getElementById("scratch-layer").innerHTML = "";
-            document.querySelectorAll('.card .answer[onclick*="useTool"]').forEach(b => b.disabled = false);
+            document.querySelectorAll('.lab-tool-btn').forEach(b => b.disabled = false);
             document.getElementById("lab-result").innerHTML = `<p style="color:#777;">Нажмите на инструмент, чтобы проверить твёрдость</p>`;
             this.remove();
         };
