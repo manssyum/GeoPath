@@ -3,30 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тайны недр Земли</title>
+    <title>Школа юного геолога</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header>
-    <h1>🌍 Тайны недр Земли</h1>
+    <h1>🌍 Школа юного геолога</h1>
     <div class="stats">
         <span>⭐ Опыт: <span id="xp">0</span></span>
         <span>🏆 Уровень: <span id="level">1</span></span>
+        <span>📈 До след. уровня: <span id="xpToNext">50</span> ⭐</span>
     </div>
 </header>
 
 <nav>
-    <button onclick="showTheory()">📖 Теория</button>
-    <button onclick="startQuiz()">❓ Викторина</button>
-    <button onclick="startFindError()">🔍 Найди ошибку</button>
-    <button onclick="startFindOdd()">🧩 Найди лишнее</button>
-    <button onclick="startSort()">📊 Сортировка</button>
-    <button onclick="startMatch()">🔗 Соотнеси</button>
-    <button onclick="startImageQuiz()">🖼️ Определи по описанию</button>
-    <button onclick="startHardnessTest()">📏 Шкала твёрдости</button>
-    <button onclick="startHardnessLab()">🔬 Лаборатория</button>
-    <button onclick="showAchievements()">🏅 Достижения</button>
+    <button id="nav-theory" onclick="showTheory()">📖 Теория</button>
+    <button id="nav-quiz" onclick="startQuiz()">❓ Викторина</button>
+    <button id="nav-error" onclick="startFindError()">🔍 Найди ошибку</button>
+    <button id="nav-odd" onclick="startFindOdd()">🧩 Найди лишнее</button>
+    <button id="nav-sort" onclick="startSort()">📊 Сортировка</button>
+    <button id="nav-match" onclick="startMatch()">🔗 Соотнеси</button>
+    <button id="nav-image" onclick="startImageQuiz()">🖼️ Определи по описанию</button>
+    <button id="nav-hardness" onclick="startHardnessTest()">📏 Шкала твёрдости</button>
+    <button id="nav-lab" onclick="startHardnessLab()">🔬 Лаборатория</button>
+    <button id="nav-achievements" onclick="showAchievements()">🏅 Достижения</button>
 </nav>
 
 <main id="game">
