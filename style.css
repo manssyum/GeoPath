@@ -26,8 +26,6 @@ body::before{
     z-index:-1;
 }
 
-
-
 /*  ШАПКА  */
 header {
     background: rgba(38, 50, 56, 0.95);
@@ -47,6 +45,7 @@ header h1 {
     display: flex;
     justify-content: center;
     gap: 24px;
+    flex-wrap: wrap;
 }
 
 /*  НАВИГАЦИЯ  */
@@ -73,6 +72,11 @@ nav button {
 nav button:hover {
     transform: scale(1.05);
     background: #b0bec5;
+}
+
+nav button.active {
+    background: #26323c;
+    color: white;
 }
 
 /*  ОСНОВНАЯ ОБЛАСТЬ  */
@@ -174,4 +178,11 @@ main {
 
 .card .answer[style*="width:auto"] {
     text-align: center;
+}
+
+/*  МОБИЛЬНЫЕ УСТРОЙСТВА  */
+@media (max-width: 768px) {
+    body {
+        background-attachment: scroll;
+    }
 }
