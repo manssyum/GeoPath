@@ -1,8 +1,37 @@
-let xp = 0;
-let level = 1;
-let unlockedAchievements = new Set();
+// === СОСТОЯНИЕ (загружаем из localStorage) ===
+let xp = Number(localStorage.getItem("geo_xp")) || 0;
+let level = Number(localStorage.getItem("geo_level")) || 1;
+let unlockedAchievements = new Set(JSON.parse(localStorage.getItem("geo_achievements") || "[]"));
 
-//ДОБАВЛЕНИЕ ОПЫТА И ПРОВЕРКА УРОВНЯ 
+// === ОБЩЕЕ СОСТОЯНИЕ ДЛЯ ИГР ===
+const state = {
+    currentErrorQuestion: null,
+    currentOddQuestion: null,
+    sortData: null,
+    sortCorrect: 0,
+    sortAnswered: 0,
+    matchData: null,
+    currentImageQuestion: null,
+    currentImageOptions: null,
+    shuffledHardness: null,
+    currentLabMineral: null
+};
+
+// === ПОДСВЕТКА АКТИВНОГО РАЗДЕЛА ===
+function setActiveNav(id) {
+    document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
+
+// === ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ===
+function updateStats() {
+    document.getElementById("xp").innerText = xp;
+    document.getElementById("level").innerText = level;
+    const needed = level * 50 - xp;
+    document.getElementById("xpToNext").innerText = needed;
+}
+
+// === ДОБАВЛЕНИЕ ОПЫТА ===
 function addXP(count) {
     xp += count;
 
@@ -11,11 +40,16 @@ function addXP(count) {
     }
 
     checkAchievements();
-    document.getElementById("xp").innerText = xp;
-    document.getElementById("level").innerText = level;
+
+    // сохраняем прогресс
+    localStorage.setItem("geo_xp", xp);
+    localStorage.setItem("geo_level", level);
+    localStorage.setItem("geo_achievements", JSON.stringify([...unlockedAchievements]));
+
+    updateStats();
 }
 
-//ПЕРЕМЕШИВАНИЕ МАССИВА
+// === ПЕРЕМЕШИВАНИЕ МАССИВА ===
 function shuffle(arr) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
@@ -25,14 +59,9 @@ function shuffle(arr) {
     return a;
 }
 
-//ПРОВЕРКА ДОСТИЖЕНИЙ
+// === ПРОВЕРКА ДОСТИЖЕНИЙ ===
 function checkAchievements() {
-    const achievements = [
-        { name: "Начинающий геолог",   emoji: "🔍", xp: 50  },
-        { name: "Полевой исследователь",emoji: "🔨", xp: 150 },
-        { name: "Хранитель слоёв",     emoji: "📐", xp: 300 },
-        { name: "Мастер земных недр",  emoji: "⛰️", xp: 500 }
-    ];
+    const achievements = achievementsList;
 
     achievements.forEach(a => {
         if (xp >= a.xp && !unlockedAchievements.has(a.name)) {
@@ -42,14 +71,11 @@ function checkAchievements() {
     });
 }
 
-//ДОСТИЖЕНИЯ — экран отображения
+// === ДОСТИЖЕНИЯ — экран отображения ===
 function showAchievements() {
-    const achievements = [
-        { name: "Начинающий геолог",   emoji: "🔍", xp: 50  },
-        { name: "Полевой исследователь",emoji: "🔨", xp: 150 },
-        { name: "Хранитель слоёв",     emoji: "📐", xp: 300 },
-        { name: "Мастер земных недр",  emoji: "⛰️", xp: 500 }
-    ];
+    setActiveNav("nav-achievements");
+
+    const achievements = achievementsList;
 
     let html = `<div class="card"><h2>🏅 Достижения</h2>`;
     achievements.forEach(a => {
@@ -68,11 +94,43 @@ function showAchievements() {
     document.getElementById("game").innerHTML = html;
 }
 
-//ТЕОРИЯ 
+// === ТЕОРИЯ ===
 function showTheory() {
+    setActiveNav("nav-theory");
+
+    const order = ['igneous', 'sedimentary', 'metamorphic', 'metasomatic'];
+    const icons = { igneous: '🌋', sedimentary: '🏖️', metamorphic: '🔮', metasomatic: '⚗️' };
+    
+    let catalogHtml = '';
+    
+    order.forEach(type => {
+        const items = rockCatalog
+            .filter(r => r.type === type)
+            .sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+        
+        catalogHtml += `
+            <div style="margin-bottom:15px;">
+                <h3 style="font-size:16px;margin-bottom:5px;">${icons[type]} ${rockTypeLabels[type]}</h3>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;padding-left:10px;">
+                    ${items.map(r => `
+                        <div style="margin:2px 0;font-size:13px;padding:4px 8px;background:#f5f5f5;border-radius:4px;">
+                            <b>${r.name}</b> — <span style="color:#555;font-size:12px;">${r.desc}</span>
+                        </div>
+                    `).join("")}
+                </div>
+            </div>
+        `;
+    });
+
     let html = `
         <div class="card">
-            <h2>📚 Таблица твёрдости Мооса</h2>
+            <h2>📚 Каталог горных пород</h2>
+            <hr style="margin:15px 0;">
+            ${catalogHtml}
+        </div>
+        
+        <div class="card">
+            <h2>📏 Шкала твёрдости Мооса</h2>
             <table style="width:100%;border-collapse:collapse;margin-top:10px;">
                 <tr style="background:#eceff1;">
                     <th style="padding:8px;border:1px solid #ddd;text-align:center;">Твёрдость</th>
@@ -97,42 +155,26 @@ function showTheory() {
         </div>
 
         <div class="card">
-            <h2>🏔️ Осадочные породы</h2>
-            <ul>${theory.sedimentary.map(r => `<li style="margin:6px 0;">${r}</li>`).join("")}</ul>
-        </div>
-
-        <div class="card">
-            <h2>🌋 Магматические породы</h2>
-            <ul>${theory.magmatic.map(r => `<li style="margin:6px 0;">${r}</li>`).join("")}</ul>
-        </div>
-
-        <div class="card">
-            <h2>🔮 Метаморфические породы</h2>
-            <ul>${theory.metamorphic.map(r => `<li style="margin:6px 0;">${r}</li>`).join("")}</ul>
-        </div>
-        <div class="card">
-            <h2>🔬 Структуры горных пород</h2>
+            <h2>🧱 Текстуры горных пород</h2>
             <ul>
-        ${theory.structures.map(item =>
-            `<li style="margin:8px 0;">${item}</li>`
-        ).join("")}
+                ${theory.textures.map(item => `<li style="margin:8px 0;">${item}</li>`).join("")}
             </ul>
         </div>
 
         <div class="card">
-            <h2>🧱 Текстуры горных пород</h2>
+            <h2>🔬 Структуры горных пород</h2>
             <ul>
-        ${theory.textures.map(item =>
-            `<li style="margin:8px 0;">${item}</li>`
-        ).join("")}
+                ${theory.structures.map(item => `<li style="margin:8px 0;">${item}</li>`).join("")}
             </ul>
         </div>
     `;
     document.getElementById("game").innerHTML = html;
 }
 
-//ВИКТОРИНА
+// === ВИКТОРИНА ===
 function startQuiz() {
+    setActiveNav("nav-quiz");
+
     const q = quiz[Math.floor(Math.random() * quiz.length)];
     let html = `<div class="card"><h2>❓ Викторина</h2><p style="font-size:16px;margin:15px 0;">${q.question}</p>`;
     q.answers.forEach((a, i) => {
@@ -157,10 +199,12 @@ function checkAnswer(btn, user, correct) {
     }
 }
 
-//  НАЙДИ ОШИБКУ 
+// === НАЙДИ ОШИБКУ ===
 function startFindError() {
+    setActiveNav("nav-error");
+
     const q = findError[Math.floor(Math.random() * findError.length)];
-    window.currentErrorQuestion = q;
+    state.currentErrorQuestion = q;
 
     document.getElementById("game").innerHTML = `
         <div class="card">
@@ -174,7 +218,7 @@ function startFindError() {
 }
 
 function answerError(btn, userSaysHasError) {
-    const q = window.currentErrorQuestion;
+    const q = state.currentErrorQuestion;
     const buttons = document.querySelectorAll(".answer");
     buttons.forEach(b => b.disabled = true);
 
@@ -201,10 +245,12 @@ function answerError(btn, userSaysHasError) {
     setTimeout(() => startFindError(), 3000);
 }
 
-//  НАЙДИ ЛИШНЕЕ 
+// === НАЙДИ ЛИШНЕЕ ===
 function startFindOdd() {
+    setActiveNav("nav-odd");
+
     const q = findOdd[Math.floor(Math.random() * findOdd.length)];
-    window.currentOddQuestion = q;
+    state.currentOddQuestion = q;
 
     let html = `<div class="card"><h2>🧩 Найди лишнее</h2><p style="margin:10px 0;">Выберите лишнее слово:</p>`;
     q.items.forEach((item, i) => {
@@ -215,7 +261,7 @@ function startFindOdd() {
 }
 
 function checkOdd(btn, user) {
-    const q = window.currentOddQuestion;
+    const q = state.currentOddQuestion;
     const buttons = document.querySelectorAll(".answer");
     buttons.forEach(b => b.disabled = true);
 
@@ -241,12 +287,14 @@ function checkOdd(btn, user) {
     setTimeout(() => startFindOdd(), 3000);
 }
 
-//  СОРТИРОВКА 
+// === СОРТИРОВКА ===
 function startSort() {
+    setActiveNav("nav-sort");
+
     const picked = shuffle([...sorting]).slice(0, 6);
-    window.sortData = picked;
-    window.sortCorrect = 0;
-    window.sortAnswered = 0;
+    state.sortData = picked;
+    state.sortCorrect = 0;
+    state.sortAnswered = 0;
 
     const classes = [...new Set(sorting.map(s => s.type))];
 
@@ -282,13 +330,13 @@ function sortAnswer(btn, idx, realType, chosenType) {
     row.querySelectorAll(".answer").forEach(b => b.disabled = true);
 
     const feedback = document.getElementById("sort-feedback-" + idx);
-    window.sortAnswered++;
+    state.sortAnswered++;
 
     if (realType === chosenType) {
         btn.classList.add("correct");
         feedback.innerHTML = "✅ Верно!";
         feedback.style.color = "#2e7d32";
-        window.sortCorrect++;
+        state.sortCorrect++;
         addXP(5);
     } else {
         btn.classList.add("wrong");
@@ -299,9 +347,9 @@ function sortAnswer(btn, idx, realType, chosenType) {
         feedback.style.color = "#c62828";
     }
 
-    document.getElementById("sortScore").innerText = window.sortCorrect;
+    document.getElementById("sortScore").innerText = state.sortCorrect;
 
-    if (window.sortAnswered === window.sortData.length) {
+    if (state.sortAnswered === state.sortData.length) {
         setTimeout(() => {
             const retry = document.createElement("button");
             retry.className = "answer";
@@ -312,10 +360,12 @@ function sortAnswer(btn, idx, realType, chosenType) {
     }
 }
 
-//  СООТНЕСЕНИЕ 
+// === СООТНЕСЕНИЕ ===
 function startMatch() {
+    setActiveNav("nav-match");
+
     const shuffledData = shuffle([...matching]);
-    window.matchData = shuffledData;
+    state.matchData = shuffledData;
 
     const uses = matching.map(m => m.use);
 
@@ -349,7 +399,7 @@ function startMatch() {
 }
 
 function checkAllMatches() {
-    const data = window.matchData;
+    const data = state.matchData;
     let correct = 0;
 
     data.forEach((m, i) => {
@@ -381,12 +431,15 @@ function checkAllMatches() {
     }
 }
 
-//  ОПРЕДЕЛИ ПО ОПИСАНИЮ 
+// === ОПРЕДЕЛИ ПО ОПИСАНИЮ ===
 function startImageQuiz() {
+    setActiveNav("nav-image");
+
     const q = imageQuiz[Math.floor(Math.random() * imageQuiz.length)];
     const shuffledOptions = shuffle([...q.options]);
 
-    window.currentImageQuestion = q;
+    state.currentImageQuestion = q;
+    state.currentImageOptions = shuffledOptions;
 
     let html = `
         <div class="card">
@@ -408,10 +461,7 @@ function startImageQuiz() {
         `;
     });
 
-    window.currentImageOptions = shuffledOptions;
-
     html += `</div>`;
-
     document.getElementById("game").innerHTML = html;
 }
 
@@ -419,20 +469,14 @@ function checkImageAnswer(btn, index) {
     const buttons = document.querySelectorAll(".answer");
     buttons.forEach(b => b.disabled = true);
 
-    const chosen =
-        window.currentImageOptions[index];
-
-    const correct =
-        window.currentImageQuestion.options[
-            window.currentImageQuestion.correct
-        ];
+    const chosen = state.currentImageOptions[index];
+    const correct = state.currentImageQuestion.options[state.currentImageQuestion.correct];
 
     if (chosen === correct) {
         btn.classList.add("correct");
         addXP(15);
     } else {
         btn.classList.add("wrong");
-
         buttons.forEach(b => {
             if (b.textContent.trim() === correct) {
                 b.classList.add("correct");
@@ -443,9 +487,11 @@ function checkImageAnswer(btn, index) {
     setTimeout(() => startImageQuiz(), 1800);
 }
 
-//  ШКАЛА ТВЁРДОСТИ 
+// === ШКАЛА ТВЁРДОСТИ ===
 function startHardnessTest() {
-    window.shuffledHardness = shuffle([...hardnessScale]);
+    setActiveNav("nav-hardness");
+
+    state.shuffledHardness = shuffle([...hardnessScale]);
 
     let html = `
         <div class="card">
@@ -454,7 +500,7 @@ function startHardnessTest() {
             <p style="font-size:13px;color:#666;margin-bottom:12px;">1 = самый мягкий, 10 = самый твёрдый</p>
     `;
 
-    window.shuffledHardness.forEach((m, i) => {
+    state.shuffledHardness.forEach((m, i) => {
         html += `
             <div style="display:flex;align-items:center;gap:12px;padding:8px 12px;
                 margin:4px 0;background:#f9f9f9;border-radius:6px;flex-wrap:wrap;">
@@ -476,7 +522,7 @@ function startHardnessTest() {
 }
 
 function checkHardness() {
-    const scale = window.shuffledHardness;
+    const scale = state.shuffledHardness;
     let correct = 0;
 
     scale.forEach((m, i) => {
@@ -510,18 +556,19 @@ function checkHardness() {
     }
 }
 
-//  ЛАБОРАТОРИЯ ТВЁРДОСТИ 
-let currentLabMineral = null;
-
+// === ЛАБОРАТОРИЯ ТВЁРДОСТИ ===
 function startHardnessLab() {
-    currentLabMineral = labMinerals[Math.floor(Math.random() * labMinerals.length)];
+    setActiveNav("nav-lab");
+
+    state.currentLabMineral = labMinerals[Math.floor(Math.random() * labMinerals.length)];
+    const mineral = state.currentLabMineral;
 
     let html = `
         <div class="card">
-            <h2>Лаборатория твёрдости</h2>
+            <h2>🔬 Лаборатория твёрдости</h2>
             <p style="margin:10px 0;font-size:14px;color:#666;">
-                Выберите инструмент и попробуйте поцарапать минерал.
-                <br>Царапина появится, если инструмент <b>твёрже</b> минерала.
+                Выберите инструмент и попробуйте поцарапать минерал или горную породу.
+                <br>Царапина появится, если инструмент <b>твёрже</b> образца.
             </p>
 
             <div style="display:flex;gap:30px;align-items:center;flex-wrap:wrap;margin:15px 0;justify-content:center;">
@@ -533,12 +580,14 @@ function startHardnessLab() {
                         display:flex;flex-direction:column;
                         align-items:center;justify-content:center;
                         position:relative;overflow:hidden;">
-                        <img src="${currentLabMineral.image}" 
-                             alt="${currentLabMineral.name}"
-                             style="width:100%;height:100%;object-fit:cover;border-radius:12px;">
+                        <img src="${mineral.image}" 
+                             alt="${mineral.name}"
+                             style="width:100%;height:100%;object-fit:cover;border-radius:12px;"
+                             onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\\'font-size:48px;\\'>🪨</span><br><span style=\\'font-size:14px;color:#888;\\'>нет фото</span>';">
                         <div id="scratch-layer" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;border-radius:12px;"></div>
                     </div>
-                    <p style="margin-top:8px;font-size:18px;font-weight:bold;">${currentLabMineral.name}</p>
+                    <p style="margin-top:8px;font-size:18px;font-weight:bold;">${mineral.name}</p>
+                    <p style="font-size:13px;color:#555;">Твёрдость: ${mineral.hardness}</p>
                 </div>
 
                 <!-- Инструменты -->
@@ -558,7 +607,9 @@ function startHardnessLab() {
                 <p style="color:#777;">Нажмите на инструмент, чтобы проверить твёрдость</p>
             </div>
 
-            <button class="answer" style="width:auto;display:inline-block;padding:8px 20px;margin-top:12px;" onclick="startHardnessLab()">Другой минерал</button>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+                <button class="answer" style="width:auto;display:inline-block;padding:8px 20px;" onclick="startHardnessLab()">🔄 Другой образец</button>
+            </div>
         </div>
     `;
     document.getElementById("game").innerHTML = html;
@@ -566,22 +617,43 @@ function startHardnessLab() {
 
 function useTool(toolIndex) {
     const tool = labTools[toolIndex];
-    const mineral = currentLabMineral;
+    const mineral = state.currentLabMineral;
 
     const scratchLayer = document.getElementById("scratch-layer");
     const resultDiv = document.getElementById("lab-result");
 
-    const willScratch = tool.hardness > mineral.hardness;
-
     // Создаём царапину по центру
-    const x = 70 + Math.random() * 80; // от 70 до 150
-    const y = 70 + Math.random() * 80; // от 70 до 150
+    const x = 70 + Math.random() * 80;
+    const y = 70 + Math.random() * 80;
     const angle = Math.random() * 360;
     const length = 40 + Math.random() * 30;
 
+    let willScratch = false;
+    let resultText = '';
+
+    if (tool.hardness > mineral.hardness) {
+        willScratch = true;
+        resultText = `
+            ${tool.name} (твёрдость ${tool.hardness})
+            оставил царапину на ${mineral.name} (твёрдость ${mineral.hardness})
+            <br>✅ Инструмент твёрже образца.
+        `;
+    } else if (tool.hardness === mineral.hardness) {
+        resultText = `
+            ${tool.name} (твёрдость ${tool.hardness})
+            на ${mineral.name} (твёрдость ${mineral.hardness})
+            <br>➖ Твёрдость примерно равна — царапина едва заметна или её нет.
+        `;
+    } else {
+        resultText = `
+            ${tool.name} (твёрдость ${tool.hardness})
+            на ${mineral.name} (твёрдость ${mineral.hardness})
+            <br>❌ Царапины нет — образец твёрже инструмента.
+        `;
+    }
+
     if (willScratch) {
         const scratch = document.createElement("div");
-
         scratch.style.cssText = `
             position:absolute;
             left:${x}px;
@@ -594,26 +666,10 @@ function useTool(toolIndex) {
             border-radius:4px;
             box-shadow:0 0 12px rgba(255,255,255,0.9);
         `;
-
         scratchLayer.appendChild(scratch);
-}
+    }
 
     document.querySelectorAll('.lab-tool-btn').forEach(b => b.disabled = true);
-
-    let resultText = '';
-    if (willScratch) {
-        resultText = `
-            ${tool.name} (твёрдость ${tool.hardness})
-            оставил царапину на ${mineral.name} (твёрдость ${mineral.hardness})
-            Вывод: ${tool.name} твёрже, чем ${mineral.name}.
-        `;
-    } else {
-        resultText = `
-            ${tool.name} (твёрдость ${tool.hardness})
-            не оставил царапины на ${mineral.name} (твёрдость ${mineral.hardness})
-            Вывод: ${tool.name} мягче, чем ${mineral.name}.
-        `;
-    }
 
     resultDiv.innerHTML = `
         <div style="padding:15px;border-radius:8px;border-left:5px solid ${willScratch ? '#4caf50' : '#f44336'};background:#f9f9f9;font-size:15px;line-height:1.8;">
@@ -625,7 +681,7 @@ function useTool(toolIndex) {
         const resetBtn = document.createElement("button");
         resetBtn.className = "answer";
         resetBtn.style.cssText = "width:auto;display:inline-block;padding:8px 16px;margin-top:10px;";
-        resetBtn.textContent = "Попробовать ещё раз с этим минералом";
+        resetBtn.textContent = "Попробовать ещё раз с этим образцом";
         resetBtn.onclick = function() {
             document.getElementById("scratch-layer").innerHTML = "";
             document.querySelectorAll('.lab-tool-btn').forEach(b => b.disabled = false);
@@ -635,3 +691,7 @@ function useTool(toolIndex) {
         resultDiv.appendChild(resetBtn);
     }, 500);
 }
+
+// === ИНИЦИАЛИЗАЦИЯ ===
+// Восстанавливаем состояние при загрузке
+updateStats();
